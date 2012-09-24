@@ -3,6 +3,7 @@
 from django import forms
 from django.conf import settings
 from django.utils.safestring import mark_safe
+from django.template.defaultfilters import escape
 from paypal.standard.conf import *
 from paypal.standard.widgets import ValueHiddenInput, ReservedValueHiddenInput
 from paypal.standard.conf import (POSTBACK_ENDPOINT, SANDBOX_POSTBACK_ENDPOINT, 
@@ -16,6 +17,14 @@ PAYPAL_DATE_FORMAT = ("%H:%M:%S %b. %d, %Y PST",
                       "%H:%M:%S %b. %d, %Y PDT",
                       "%H:%M:%S %b %d, %Y PST",
                       "%H:%M:%S %b %d, %Y PDT",)
+
+FORM_HTML = u"""
+        <form action="%s" method="post">
+            %s %s
+            <input type="hidden" name="upload" value="1">
+            <input type="image" src="%s" border="0" name="submit" alt="Buy it Now" />
+        </form>
+    """
 
 class PayPalPaymentsForm(forms.Form):
     """
@@ -95,22 +104,23 @@ class PayPalPaymentsForm(forms.Form):
     no_shipping = forms.ChoiceField(widget=forms.HiddenInput(), choices=SHIPPING_CHOICES, 
         initial=SHIPPING_CHOICES[0][0])
 
-    def __init__(self, button_type="buy", *args, **kwargs):
+    def __init__(self, button_type="buy", extra_fields={}, *args, **kwargs):
         super(PayPalPaymentsForm, self).__init__(*args, **kwargs)
         self.button_type = button_type
+        self.extra_fields = extra_fields
 
     def render(self):
-        return mark_safe(u"""<form action="%s" method="post">
-    %s
-    <input type="image" src="%s" border="0" name="submit" alt="Buy it Now" />
-</form>""" % (POSTBACK_ENDPOINT, self.as_p(), self.get_image()))
+        extra_fields = u''.join(['<input type="hidden" name="%s" value="%s" />' % \
+                        (escape(name), escape(value)) for name, value in self.extra_fields.iteritems()])
+
+        return mark_safe(FORM_HTML % (POSTBACK_ENDPOINT, self.as_p(), extra_fields, self.get_image()))
         
         
     def sandbox(self):
-        return mark_safe(u"""<form action="%s" method="post">
-    %s
-    <input type="image" src="%s" border="0" name="submit" alt="Buy it Now" />
-</form>""" % (SANDBOX_POSTBACK_ENDPOINT, self.as_p(), self.get_image()))
+        extra_fields = u''.join(['<input type="hidden" name="%s" value="%s" />' % \
+                        (escape(name), escape(value)) for name, value in self.extra_fields.iteritems()])
+
+        return mark_safe(FORM_HTML % (SANDBOX_POSTBACK_ENDPOINT, self.as_p(), extra_fields, self.get_image()))
         
     def get_image(self):
         return {
