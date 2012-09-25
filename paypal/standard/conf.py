@@ -8,7 +8,7 @@ TEST = getattr(settings, "PAYPAL_TEST", True)
 
 
 RECEIVER_EMAIL = settings.PAYPAL_RECEIVER_EMAIL
-
+CHECK_RCVR_EMAIL = getattr(settings, 'CHECK_RCVR_EMAIL', True)
 
 # API Endpoints.
 POSTBACK_ENDPOINT = "https://www.paypal.com/cgi-bin/webscr"

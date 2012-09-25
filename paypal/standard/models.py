@@ -3,7 +3,11 @@
 from django.db import models
 from django.conf import settings
 from paypal.standard.helpers import duplicate_txn_id, check_secret
-from paypal.standard.conf import RECEIVER_EMAIL, POSTBACK_ENDPOINT, SANDBOX_POSTBACK_ENDPOINT
+from paypal.standard.conf import (
+    RECEIVER_EMAIL, 
+    POSTBACK_ENDPOINT,
+    SANDBOX_POSTBACK_ENDPOINT,
+    CHECK_RCVR_EMAIL)
 
 ST_PP_ACTIVE = 'Active'
 ST_PP_CANCELLED = 'Cancelled'
@@ -252,8 +256,9 @@ class PayPalStandardBase(Model):
                     self.set_flag("Invalid payment_status. (%s)" % self.payment_status)
                 if duplicate_txn_id(self):
                     self.set_flag("Duplicate txn_id. (%s)" % self.txn_id)
-                if self.receiver_email != RECEIVER_EMAIL:
-                    self.set_flag("Invalid receiver_email. (%s)" % self.receiver_email)
+                if CHECK_RCVR_EMAIL:
+                    if self.receiver_email != RECEIVER_EMAIL:
+                        self.set_flag("Invalid receiver_email. (%s)" % self.receiver_email)
                 if callable(item_check_callable):
                     flag, reason = item_check_callable(self)
                     if flag:
