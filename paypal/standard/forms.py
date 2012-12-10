@@ -59,6 +59,7 @@ class PayPalPaymentsForm(forms.Form):
     BUY = 'buy'
     SUBSCRIBE = 'subscribe'
     DONATE = 'donate'
+    CHECKOUT = 'cart'
 
     # Where the money goes.
     business = forms.CharField(widget=ValueHiddenInput(), initial=RECEIVER_EMAIL)
@@ -127,9 +128,11 @@ class PayPalPaymentsForm(forms.Form):
             (True, self.SUBSCRIBE): SUBSCRIPTION_SANDBOX_IMAGE,
             (True, self.BUY): SANDBOX_IMAGE,
             (True, self.DONATE): DONATION_SANDBOX_IMAGE,
+            (True, self.CHECKOUT): CHECKOUT_SANDBOX_IMAGE,
             (False, self.SUBSCRIBE): SUBSCRIPTION_IMAGE,
             (False, self.BUY): IMAGE,
             (False, self.DONATE): DONATION_IMAGE,
+            (False, self.CHECKOUT): CHECKOUT_IMAGE,
         }[TEST, self.button_type]
 
     def is_transaction(self):
