@@ -22,6 +22,14 @@ FORM_HTML = u"""
         <form action="%s" method="post">
             %s %s
             <input type="hidden" name="upload" value="1">
+            <input type="submit" class="btn" value="Checkout" alt="Checkout with PayPal" />
+        </form>
+    """
+
+IMAGEBUTTON_FORM_HTML = u"""
+        <form action="%s" method="post">
+            %s %s
+            <input type="hidden" name="upload" value="1">
             <input type="image" src="%s" border="0" name="submit" alt="Buy it Now" />
         </form>
     """
@@ -114,14 +122,19 @@ class PayPalPaymentsForm(forms.Form):
         extra_fields = u''.join(['<input type="hidden" name="%s" value="%s" />' % \
                         (escape(name), escape(value)) for name, value in self.extra_fields.iteritems()])
 
-        return mark_safe(FORM_HTML % (POSTBACK_ENDPOINT, self.as_p(), extra_fields, self.get_image()))
+        if self.button_type == 'unstyled':
+            return mark_safe(FORM_HTML % (POSTBACK_ENDPOINT, self.as_p(), extra_fields))
+        else:
+            return mark_safe(IMAGEBUTTON_FORM_HTML % (POSTBACK_ENDPOINT, self.as_p(), extra_fields, self.get_image()))
         
         
     def sandbox(self):
         extra_fields = u''.join(['<input type="hidden" name="%s" value="%s" />' % \
                         (escape(name), escape(value)) for name, value in self.extra_fields.iteritems()])
-
-        return mark_safe(FORM_HTML % (SANDBOX_POSTBACK_ENDPOINT, self.as_p(), extra_fields, self.get_image()))
+        if self.button_type == 'unstyled':
+            return mark_safe(FORM_HTML % (SANDBOX_POSTBACK_ENDPOINT, self.as_p(), extra_fields))
+        else:
+            return mark_safe(IMAGEBUTTON_FORM_HTML % (SANDBOX_POSTBACK_ENDPOINT, self.as_p(), extra_fields, self.get_image()))
         
     def get_image(self):
         return {
