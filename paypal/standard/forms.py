@@ -22,7 +22,7 @@ FORM_HTML = u"""
         <form action="%s" method="post">
             %s %s
             <input type="hidden" name="upload" value="1">
-            <input type="submit" class="btn" value="Checkout" alt="Checkout with PayPal" />
+            <input id="checkoutCartButton" type="submit" class="btn pull-right btn-danger" value="Select your Lectures" alt="Checkout with PayPal" />
         </form>
     """
 
