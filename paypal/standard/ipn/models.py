@@ -26,29 +26,29 @@ class PayPalIPN(PayPalStandardBase):
         # Transaction signals:
         if self.is_transaction():
             if self.flag:
-                payment_was_flagged.send(sender=self)
+                payment_was_flagged.send_robust(sender=self)
             else:
-                payment_was_successful.send(sender=self)
+                payment_was_successful.send_robust(sender=self)
         # Recurring payment signals:
         # XXX: Should these be merged with subscriptions?
         elif self.is_recurring():
             if self.is_recurring_create():
-                recurring_create.send(sender=self)
+                recurring_create.send_robust(sender=self)
             elif self.is_recurring_payment():
-                recurring_payment.send(sender=self)
+                recurring_payment.send_robust(sender=self)
             elif self.is_recurring_cancel():
-                recurring_cancel.send(sender=self)
+                recurring_cancel.send_robust(sender=self)
             elif self.is_recurring_skipped():
-                recurring_skipped.send(sender=self)
+                recurring_skipped.send_robust(sender=self)
             elif self.is_recurring_failed():
-                recurring_failed.send(sender=self)
+                recurring_failed.send_robust(sender=self)
        # Subscription signals:
         else:
             if self.is_subscription_cancellation():
-                subscription_cancel.send(sender=self)
+                subscription_cancel.send_robust(sender=self)
             elif self.is_subscription_signup():
-                subscription_signup.send(sender=self)
+                subscription_signup.send_robust(sender=self)
             elif self.is_subscription_end_of_term():
-                subscription_eot.send(sender=self)
+                subscription_eot.send_robust(sender=self)
             elif self.is_subscription_modified():
-                subscription_modify.send(sender=self)            
+                subscription_modify.send_robust(sender=self)            

@@ -294,19 +294,19 @@ class PayPalStandardBase(Model):
         # Transaction signals:
         if self.is_transaction():
             if self.flag:
-                payment_was_flagged.send(sender=self)
+                payment_was_flagged.send_robust(sender=self)
             else:
-                payment_was_successful.send(sender=self)
+                payment_was_successful.send_robust(sender=self)
         # Subscription signals:
         else:
             if self.is_subscription_cancellation():
-                subscription_cancel.send(sender=self)
+                subscription_cancel.send_robust(sender=self)
             elif self.is_subscription_signup():
-                subscription_signup.send(sender=self)
+                subscription_signup.send_robust(sender=self)
             elif self.is_subscription_end_of_term():
-                subscription_eot.send(sender=self)
+                subscription_eot.send_robust(sender=self)
             elif self.is_subscription_modified():
-                subscription_modify.send(sender=self) 
+                subscription_modify.send_robust(sender=self) 
 
 
     def initialize(self, request):
