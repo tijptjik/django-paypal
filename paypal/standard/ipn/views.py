@@ -31,6 +31,9 @@ def ipn(request, item_check_callable=None):
         if data.get(date_field) == 'N/A':
             del data[date_field]
 
+    if data.get('txn_type') == 'cart':
+        data['item_name'] = 'Shopping Cart'
+
     form = PayPalIPNForm(data)
     if form.is_valid():
         try:

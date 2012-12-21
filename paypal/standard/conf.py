@@ -3,9 +3,7 @@ from django.conf import settings
 class PayPalSettingsError(Exception):
     """Raised when settings be bad."""
     
-
 TEST = getattr(settings, "PAYPAL_TEST", True)
-
 
 RECEIVER_EMAIL = settings.PAYPAL_RECEIVER_EMAIL
 CHECK_RCVR_EMAIL = getattr(settings, 'CHECK_RCVR_EMAIL', True)

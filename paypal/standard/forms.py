@@ -22,7 +22,7 @@ FORM_HTML = u"""
         <form action="%s" method="post">
             %s %s
             <input type="hidden" name="upload" value="1">
-            <input id="checkoutCartButton" type="submit" class="btn pull-right btn-danger" value="Select your Lectures" alt="Checkout with PayPal" />
+            <input id="checkoutCartButton" type="submit" class="btn %s" value="%s" alt="Checkout with PayPal" />
         </form>
     """
 
@@ -113,17 +113,19 @@ class PayPalPaymentsForm(forms.Form):
     no_shipping = forms.ChoiceField(widget=forms.HiddenInput(), choices=SHIPPING_CHOICES, 
         initial=SHIPPING_CHOICES[0][0])
 
-    def __init__(self, button_type="buy", extra_fields={}, *args, **kwargs):
+    def __init__(self, button_class='btn', button_text='Buy with PayPal', button_type="buy", extra_fields={}, *args, **kwargs):
         super(PayPalPaymentsForm, self).__init__(*args, **kwargs)
+        self.button_class = button_class
         self.button_type = button_type
+        self.button_text = button_text
         self.extra_fields = extra_fields
 
     def render(self):
         extra_fields = u''.join(['<input type="hidden" name="%s" value="%s" />' % \
                         (escape(name), escape(value)) for name, value in self.extra_fields.iteritems()])
 
-        if self.button_type == 'unstyled':
-            return mark_safe(FORM_HTML % (POSTBACK_ENDPOINT, self.as_p(), extra_fields))
+        if self.button_type == 'bootstrap':
+            return mark_safe(FORM_HTML % (POSTBACK_ENDPOINT, self.as_p(), extra_fields), self.button_class, self.button_text)
         else:
             return mark_safe(IMAGEBUTTON_FORM_HTML % (POSTBACK_ENDPOINT, self.as_p(), extra_fields, self.get_image()))
         
@@ -131,8 +133,8 @@ class PayPalPaymentsForm(forms.Form):
     def sandbox(self):
         extra_fields = u''.join(['<input type="hidden" name="%s" value="%s" />' % \
                         (escape(name), escape(value)) for name, value in self.extra_fields.iteritems()])
-        if self.button_type == 'unstyled':
-            return mark_safe(FORM_HTML % (SANDBOX_POSTBACK_ENDPOINT, self.as_p(), extra_fields))
+        if self.button_type == 'bootstrap':
+            return mark_safe(FORM_HTML % (SANDBOX_POSTBACK_ENDPOINT, self.as_p(), extra_fields, self.button_class, self.button_text))
         else:
             return mark_safe(IMAGEBUTTON_FORM_HTML % (SANDBOX_POSTBACK_ENDPOINT, self.as_p(), extra_fields, self.get_image()))
         
