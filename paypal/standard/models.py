@@ -296,6 +296,7 @@ class PayPalStandardBase(Model):
             if self.flag:
                 payment_was_flagged.send_robust(sender=self)
             else:
+                print 'SIGNAL SENT'
                 payment_was_successful.send_robust(sender=self)
         # Subscription signals:
         else:

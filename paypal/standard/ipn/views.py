@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import pytz
 from django.http import HttpResponse
+from django.contrib.auth.models import User
+from mycroft.base.models import Access, Lecture
+
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from paypal.standard.ipn.forms import PayPalIPNForm
 from paypal.standard.ipn.models import PayPalIPN
- 
- 
+from datetime import datetime
+from paypal.standard.ipn.signals import touch_user, license_user
+
+
+
 @require_POST
 @csrf_exempt
 def ipn(request, item_check_callable=None):
@@ -22,7 +29,6 @@ def ipn(request, item_check_callable=None):
     #      of if checks just to determine if flag is set.
     flag = None
     ipn_obj = None
-    
     # Clean up the data as PayPal sends some weird values such as "N/A"
     data = request.POST.copy()
     date_fields = ('time_created', 'payment_date', 'next_payment_date',
@@ -31,9 +37,39 @@ def ipn(request, item_check_callable=None):
         if data.get(date_field) == 'N/A':
             del data[date_field]
 
-    if data.get('txn_type') == 'cart':
-        data['item_name'] = 'Shopping Cart'
+    data['payer_id'] = int(data['custom'])
+    
+    if data.get('txn_type') in ['web_accept','cart', 'subscr_signup', 'subscr_payment']:
+        user = User.objects.get(pk=data['custom'])
+        user.first_name = data['first_name']
+        user.last_name = data['last_name']
+        user.save()
 
+    if data.get('txn_type') == 'web_accept':
+        accessRecord = Access(user=user,lecture=Lecture.objects.get(pk=data['item_number']), 
+            activation_date=datetime.now(pytz.utc),active=True)
+        accessRecord.save()
+        touch_user.send_robust(sender=data)
+
+    elif data.get('txn_type') == 'cart':
+        xname = []
+        xnumber = []
+        for x in xrange(int(data['num_cart_items'])):
+            name = 'item_name' + str(x+1)
+            xname.append(data[name])
+            number = 'item_number' + str(x+1)
+            xnumber.append(data[number])
+            accessRecord = Access(user=User.objects.get(pk=data['custom']),lecture=Lecture.objects.get(pk=data[number]),activation_date=datetime.now(pytz.utc),active=True)
+            accessRecord.save()
+        data['item_name'] = ", ".join(xname)[:125]
+        data['item_number'] = ", ".join(xnumber)
+    
+    elif data.get('txn_type') in ['subscr_signup']:
+        license_user.send_robust(sender=data)
+
+    elif data.get('txn_type') in ['subscr_payment']:
+        pass
+        
     form = PayPalIPNForm(data)
     if form.is_valid():
         try:
