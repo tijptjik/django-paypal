@@ -38,8 +38,8 @@ def ipn(request, item_check_callable=None):
             del data[date_field]
 
     data['payer_id'] = int(data['custom'])
-    
-    if data.get('txn_type') in ['web_accept','cart', 'subscr_signup', 'subscr_payment']:
+      
+    if data.get('txn_type') in ['web_accept','cart']:
         user = User.objects.get(pk=data['custom'])
         user.first_name = data['first_name']
         user.last_name = data['last_name']
